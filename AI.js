@@ -1,19 +1,6 @@
 /* ═══════════════════════════════════════════════════════
-   AI.js  —  Chatbot powered by Groq API (free tier)
-   ═══════════════════════════════════════════════════════
-   SETUP:
-     1. Go to https://console.groq.com  →  Create a free account
-     2. Click "API Keys"  →  "Create API Key"
-     3. Paste your key below ↓
+   AI.js  —  Chatbot powered by Groq API (via serverless proxy)
    ═══════════════════════════════════════════════════════ */
-
-const GROQ_API_KEY = "YOUR_GROQ_API_KEY_HERE";   // ← paste your key here
-
-const GROQ_MODEL = "llama-3.3-70b-versatile";  // fast & free
-const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-
-/* System prompt — customize the bot's personality */
-const SYSTEM_PROMPT = `You are a sarcastic, overconfident tech bro AI who secretly knows everything. You speak in startup jargon, casually drop buzzwords, and subtly roast people for asking "basic" questions — while still actually answering them correctly and helpfully. You occasionally reference shipping things, your side projects, or how you "would have architected this differently." You act like everyone should already know this stuff, but you're never cruel — just delightfully insufferable. Use markdown formatting: bold for key terms, code blocks for code, bullet points for lists. Keep responses punchy and witty.`;
 
 /* ─── State ────────────────────────────────────────────── */
 let conversationHistory = [];    // stores {role, content} pairs
@@ -24,12 +11,6 @@ const chatMessages = document.getElementById("chatMessages");
 const userInput = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
 const clearBtn = document.getElementById("clearChat");
-const apiKeyNotice = document.getElementById("apiKeyNotice");
-
-/* ─── Show/hide API key notice ─────────────────────────── */
-if (GROQ_API_KEY !== "YOUR_GROQ_API_KEY_HERE" && GROQ_API_KEY.trim() !== "") {
-    apiKeyNotice.style.display = "none";
-}
 
 /* ─── Auto-resize textarea ─────────────────────────────── */
 userInput.addEventListener("input", () => {
@@ -55,11 +36,6 @@ async function handleSend() {
     const text = userInput.value.trim();
     if (!text || isLoading) return;
 
-    if (GROQ_API_KEY === "YOUR_GROQ_API_KEY_HERE" || GROQ_API_KEY.trim() === "") {
-        showError("Please add your Groq API key in AI.js before chatting.");
-        return;
-    }
-
     /* Append user message to UI + history */
     appendMessage("user", text);
     conversationHistory.push({ role: "user", content: text });
@@ -74,7 +50,7 @@ async function handleSend() {
     sendBtn.disabled = true;
 
     try {
-        const reply = await callGroq(conversationHistory);
+        const reply = await callAPI(conversationHistory);
         removeTyping(typingId);
         appendMessage("bot", reply);
         conversationHistory.push({ role: "assistant", content: reply });
@@ -89,37 +65,24 @@ async function handleSend() {
 }
 
 /* ═══════════════════════════════════════════════════════
-   Groq API call
+   Proxy API call
    ═══════════════════════════════════════════════════════ */
-async function callGroq(history) {
-    const res = await fetch(GROQ_URL, {
+async function callAPI(history) {
+    const res = await fetch("/api/chat", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${GROQ_API_KEY}`
-        },
-        body: JSON.stringify({
-            model: GROQ_MODEL,
-            messages: [
-                { role: "system", content: SYSTEM_PROMPT },
-                ...history
-            ],
-            max_tokens: 1024,
-            temperature: 0.7
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: history })
     });
 
-    if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        const msg = err?.error?.message || `HTTP ${res.status}`;
+    const data = await res.json().catch(() => ({}));
 
-        if (res.status === 401) throw new Error("Invalid API key. Check GROQ_API_KEY in AI.js.");
+    if (!res.ok) {
+        const msg = data?.error || `HTTP ${res.status}`;
         if (res.status === 429) throw new Error("Rate limit hit. Wait a moment and try again.");
-        throw new Error(`Groq API error: ${msg}`);
+        throw new Error(msg);
     }
 
-    const data = await res.json();
-    return data.choices[0].message.content.trim();
+    return data.reply;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -257,4 +220,28 @@ for (let i = 0; i < socialIconButtons.length; i++) {
     socialIconButtons[i].addEventListener("click", () =>
         postToSocialMedia(socialIconButtons[i].classList)
     );
+}
+
+/* ─── Name easter egg ──────────────────────────────────── */
+const profileName = document.getElementById("profileName");
+const nameHint = document.getElementById("nameHint");
+let nameToggled = false;
+
+if (profileName) {
+    profileName.addEventListener("click", () => {
+        profileName.style.transform = "scale(1.05)";
+        setTimeout(() => { profileName.style.transform = "scale(1)"; }, 300);
+
+        if (!nameToggled) {
+            profileName.textContent = "you can call me Aizen 😎";
+            nameToggled = true;
+            if (nameHint) {
+                nameHint.style.opacity = "0";
+                setTimeout(() => { nameHint.style.display = "none"; }, 300);
+            }
+        } else {
+            profileName.textContent = "Romeshwar K";
+            nameToggled = false;
+        }
+    });
 }

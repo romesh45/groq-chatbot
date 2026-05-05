@@ -9,6 +9,8 @@
 </head>
 
 <body>
+    <div class="bg-blob bg-blob-tl"></div>
+    <div class="bg-blob bg-blob-br"></div>
     <div class="main-container" id="main">
         <!-- ═══════════════════════════════════════════
              LEFT PANEL — Profile & Project Info
@@ -26,8 +28,9 @@
                     </div>
                 </div>
                 <div class="profile-info-container">
-                    <h3 class="name">Romeshwar</h3>
-                    <p class="bot-extra-info">AI Developer · MSc Candidate</p>
+                    <h3 class="name" id="profileName">Romeshwar K</h3>
+                    <span class="name-hint" id="nameHint">click me</span>
+                    <p class="bot-extra-info">AI Developer</p>
                 </div>
             </div>
 
@@ -167,8 +170,8 @@
                         <div class="chat-avatar">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                                 <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z"
-                                    fill="rgba(59,130,246,0.2)" stroke="#3B82F6" stroke-width="1.5" />
-                                <path d="M8 12h8M12 8v8" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" />
+                                    fill="rgba(99,102,241,0.2)" stroke="#6366f1" stroke-width="1.5" />
+                                <path d="M8 12h8M12 8v8" stroke="#6366f1" stroke-width="2" stroke-linecap="round" />
                             </svg>
                         </div>
                         <div>
@@ -220,10 +223,6 @@
                     </button>
                 </div>
 
-                <!-- Key notice -->
-                <div class="api-key-notice" id="apiKeyNotice">
-                    ⚠️ Add your Groq API key in <code>AI.js</code> → <code>GROQ_API_KEY</code>
-                </div>
 
             </div>
         </div>
