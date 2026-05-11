@@ -94,7 +94,7 @@ cd groq-chatbot
 
 **2. Get a free Groq API key**
 
-Go to [console.groq.com](https://console.groq.com) → API Keys → Create API Key
+Go to [console.groq.com](https://console.groq.com) → API Keys → Create API key
 
 **3. Set up environment**
 ```bash
